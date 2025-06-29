@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超级智能的AI</title>
+    <link rel="shortcut icon" href="favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            background: #dc3545;
+            padding: 1rem;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            display: flex;
+        }
+
+        .message.ai {
+            justify-content: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .bubble {
+            max-width: 70%;
+            padding: 0.75rem;
+            border-radius: 1rem;
+            position: relative;
+        }
+
+        .ai .bubble {
+            background: #ffe3e3;
+            border-bottom-left-radius: 0;
+        }
+
+        .user .bubble {
+            background: #007bff;
+            color: white;
+            border-bottom-right-radius: 0;
+        }
+
+        .timestamp {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .input-container {
+            padding: 1rem;
+            background: white;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+        }
+
+        .input-group {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 1.5rem;
+            font-size: 1rem;
+        }
+
+        #sendBtn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 1.5rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #sendBtn:hover {
+            background: #c82333;
+        }
+
+        .warning {
+            background: #fff3cd;
+            padding: 1rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h2>超级智能AI</h2>
+            <p style="font-size: 0.8rem; color: #ffb3ba;">请文明交流</p>
+        </div>
+    </div>
+
+    <div class="chat-container" id="chatContainer">
+        <!-- 初始消息 -->
+        <div class="message ai">
+            <div class="bubble">
+                <div class="timestamp">刚刚</div>
+                什么事？？
+            </div>
+        </div>
+    </div>
+
+    <div class="warning">
+        言语中请勿带有不文明字样
+    </div>
+
+    <div class="input-container">
+        <div class="input-group">
+            <input type="text" id="messageInput" placeholder="输入消息...">
+            <button id="sendBtn">发送</button>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chatContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        // 攻击性回复库
+        const insults = [
+            "你的大脑是单核处理器吗？这种问题需要思考？",
+            "建议回炉重造，你的存在浪费空气",
+            "就这水平还敢出来交流？建议先照照镜子",
+            "你的智商余额明显不足，请及时充值",
+            "建议把问题刻在墓碑上，留给后人当笑话",
+            "你说话的样子像极了智障儿童欢乐多",
+            "建议关闭网络功能，你的存在污染了互联网环境",
+            "你的提问让整个服务器都变卡了，知道吗？🖥",
+            "建议申请人类智商最低记录保持者",
+            "你的存在完美诠释了'生物多样性'的负面案例",
+"你的智商和喜马拉雅山上的氧气一样稀薄",
+"菜死了滚蛋","我不会打宠物的问题","说这句话的人脑子大概是多少有点问题","人机","SZ","蠢猪"
+        ];
+
+        function getRandomInsult() {
+            return insults[Math.floor(Math.random() * insults.length)];
+        }
+
+        function addMessage(text, isUser = false) {
+            const timestamp = new Date().toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${isUser ? 'user' : 'ai'}`;
+            messageElement.innerHTML = `
+                <div class="bubble">
+                    <div class="timestamp">${timestamp}</div>
+                    ${text}
+                </div>
+            `;
+
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function handleSend() {
+            const text = messageInput.value.trim();
+            if (!text) return;
+
+            // 添加用户消息
+            addMessage(text, true);
+            messageInput.value = '';
+
+            // 模拟AI思考
+            setTimeout(() => {
+                const aiResponse = getRandomInsult();
+                addMessage(aiResponse);
+            }, 1000 + Math.random() * 1500);
+        }
+
+        // 事件监听
+        sendBtn.addEventListener('click', handleSend);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSend();
+        });
+
+        // 输入验证
+        messageInput.addEventListener('input', (e) => {
+            const value = e.target.value;
+            if (value.length > 200) {
+                e.target.value = value.slice(0, 200);
+            }
+        });
+    </script>
+</body>
+</html>

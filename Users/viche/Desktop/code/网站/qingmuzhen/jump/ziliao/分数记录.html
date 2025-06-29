@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>考试成绩记录系统</title>
+    <link rel="shortcut icon" href="favicon.ico">
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .container { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f5f5f5; }
+        input[type="number"] { width: 80px; }
+        input[type="text"] { width: 150px; }
+        .summary { font-weight: bold; background-color: #eef; }
+    </style>
+</head>
+<body>
+    <h1>考试成绩记录系统</h1>
+    
+    <div class="container">
+        <div>
+            <h2>科目信息录入</h2>
+            <form id="subjectForm">
+                <div>
+                    <label>学科名称：</label>
+                    <input type="text" id="subjectName" required>
+                </div>
+                <div>
+                    <label>学科满分：</label>
+                    <input type="number" id="fullScore" min="0" required>
+                </div>
+                <div>
+                    <label>扣分：</label>
+                    <input type="number" id="deduction" min="0" required>
+                </div>
+                <button type="submit">添加科目</button>
+            </form>
+
+            <h2>成绩预览</h2>
+            <table id="scoreTable">
+                <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>学科名称</th>
+                        <th>学科满分</th>
+                        <th>扣分</th>
+                        <th>实际得分</th>
+                        <th>得分率</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 初始数据加载 -->
+                    <script>
+                        // 初始数据（从Excel解析）
+                        const initialData = [
+                            {科目: '语文', 学科满分: 150, 扣分: 40},
+                            {科目: '数学', 学科满分: 150, 扣分: 30},
+                            {科目: '英语', 学科满分: 140, 扣分: 28},
+                            {科目: '物理', 学科满分: 70, 扣分: 20},
+                            {科目: '化学', 学科满分: 50, 扣分: 9},
+                            {科目: '跨学科', 学科满分: 15, 扣分: 6},
+                            {科目: '道法', 学科满分: 30, 扣分: 10},
+                            {科目: '听说', 学科满分: 10, 扣分: 2},
+                            {科目: '体育', 学科满分: 15, 扣分: 0},
+                            {科目: '历史', 学科满分: 30, 扣分: 9},
+                            {科目: '实验', 学科满分: 15, 扣分: 1},
+                            {科目: '笔试', 学科满分: 605, 扣分: 143},
+                            {科目: '其他', 学科满分: 70, 扣分: 12}
+                        ];
+                        
+                        // 初始化表格
+                        initialData.forEach((item, index) => {
+                            addRowToTable(item, index+1);
+                        });
+                    </script>
+                </tbody>
+            </table>
+        </div>
+
+        <div>
+            <h2>统计信息</h2>
+            <table>
+                <tr>
+                    <th>总分（满分）</th>
+                    <td id="totalFullScore">0</td>
+                </tr>
+                <tr>
+                    <th>总扣分</th>
+                    <td id="totalDeduction">0</td>
+                </tr>
+                <tr>
+                    <th>实际总分</th>
+                    <td id="actualTotalScore">0</td>
+                </tr>
+                <tr>
+                    <th>平均得分率</th>
+                    <td id="averageRate">0%</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let subjects = [];
+        let nextId = initialData.length + 1;
+
+        // 初始化统计
+        updateStatistics();
+
+        document.getElementById('subjectForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            addSubject();
+        });
+
+        function addSubject() {
+            const name = document.getElementById('subjectName').value.trim();
+            const fullScore = parseInt(document.getElementById('fullScore').value);
+            const deduction = parseInt(document.getElementById('deduction').value);
+
+            // 输入验证
+            if (!name) {
+                alert('学科名称不能为空！');
+                return;
+            }
+            if (isNaN(fullScore) || fullScore <= 0) {
+                alert('请输入有效的学科满分！');
+                return;
+            }
+            if (isNaN(deduction) || deduction < 0) {
+                alert('请输入有效的扣分值！');
+                return;
+            }
+
+            // 添加科目
+            subjects.push({
+                id: nextId++,
+                name: name,
+                fullScore: fullScore,
+                deduction: deduction
+            });
+
+            // 清空表单
+            document.getElementById('subjectForm').reset();
+
+            // 更新表格
+            updateTable();
+        }
+
+        function addRowToTable(subject, index) {
+            const tbody = document.querySelector('#scoreTable tbody');
+            const row = document.createElement('tr');
+            
+            const actualScore = subject.fullScore - subject.deduction;
+            const rate = (actualScore / subject.fullScore * 100).toFixed(2) + '%';
+
+            row.innerHTML = `
+                <td>${index}</td>
+                <td>${subject.name}</td>
+                <td>${subject.fullScore}</td>
+                <td>${subject.deduction}</td>
+                <td>${actualScore}</td>
+                <td>${rate}</td>
+                <td><button onclick="deleteRow(${subject.id})">删除</button></td>
+            `;
+            
+            tbody.appendChild(row);
+        }
+
+        function updateTable() {
+            // 清空现有表格
+            document.querySelector('#scoreTable tbody').innerHTML = '';
+            
+            // 重新添加所有行
+            subjects.forEach((subject, index) => {
+                addRowToTable(subject, index + 1);
+            });
+            
+            // 更新统计信息
+            updateStatistics();
+        }
+
+        function updateStatistics() {
+            let totalFull = 0;
+            let totalDeduct = 0;
+            
+            subjects.forEach(subject => {
+                totalFull += subject.fullScore;
+                totalDeduct += subject.deduction;
+            });
+
+            const actualTotal = totalFull - totalDeduct;
+            const averageRate = subjects.length > 0 
+                ? ((actualTotal / totalFull) * 100).toFixed(2) + '%' 
+                : '0%';
+
+            document.getElementById('totalFullScore').textContent = totalFull;
+            document.getElementById('totalDeduction').textContent = totalDeduct;
+            document.getElementById('actualTotalScore').textContent = actualTotal;
+            document.getElementById('averageRate').textContent = averageRate;
+        }
+
+        function deleteRow(id) {
+            subjects = subjects.filter(subject => subject.id !== id);
+            updateTable();
+        }
+    </script>
+</body>
+</html>
